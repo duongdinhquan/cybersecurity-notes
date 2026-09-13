@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to Docker Node",
+      "type": "node",
+      "request": "attach",
+      "address": "192.168.57.128",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}/deploy/app/deploy",
+      "remoteRoot": "/app",
+      "protocol": "inspector"
+    }
+  ]
+}
