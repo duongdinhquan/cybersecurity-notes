@@ -161,6 +161,8 @@ public interface InvocationHandler {
 ```
 
 Java cung cấp `java.lang.reflect.Proxy` package để tạo dynamic proxy , cung cấp method `Proxy.newProxyInstance()`
+
+Một `Proxy` instance được serviced  bởi một đối tượng được implements từ interface `InvocationHandler` thông qua một a factory method call on the `java.lang.reflect.Proxy` class:
 ```java
 Proxy.newProxyInstance(
     ClassLoader loader,

@@ -229,3 +229,33 @@ AnnotationInvocationHandler.readObject()
     }
 
 ``` 
+
+`AnnotationInvocationHandler`:
+```java
+// AnnotationInvocationHandler thực thi InvocationHandler để làm Dynamic Proxy
+class AnnotationInvocationHandler implements InvocationHandler, Serializable {
+    
+    private final Class<? extends Annotation> type;
+    private final Map<String, Object> memberValues; // Đây chính là LazyMap độc hại của chúng ta
+
+    // Constructor khởi tạo
+    public AnnotationInvocationHandler(Class<? extends Annotation> type, Map<String, Object> memberValues) {
+        this.type = type;
+        this.memberValues = memberValues;
+    }
+
+    // Phương thức invoke này sẽ tự động chạy khi có một hàm bất kỳ bị gọi trên đối tượng Proxy
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String methodName = method.getName();
+        
+        // Nếu phương thức được gọi là các hàm thông thường như toString, equals, hashCode...
+        // Nó sẽ thực hiện tra cứu giá trị trong memberValues (chính là LazyMap) bằng tên phương thức làm key.
+        
+        // ĐOẠN CODE MẤU CHỐT: Gọi phương thức get() trên Map
+        Object result = memberValues.get(methodName); // <--- LỆNH NÀY GỌI LazyMap.get()!
+        
+        return result;
+    }
+}
+```
