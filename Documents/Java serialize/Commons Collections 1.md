@@ -1,3 +1,9 @@
+```
+Ứng dụng phải sử dụng thư viện Apache Commons Collections ở các phiên bản cũ (thường là từ phiên bản 3.1 đến 3.2.1).
+commons-collections
+JDK7 OR JDK 8
+```
+
 ## Các interface và class liên quan
 **1. Transform**
 

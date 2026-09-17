@@ -96,9 +96,10 @@ public class Test {
     }
 }
 ```
-
+```
 
 ## 2. Dynamic Proxies in Java
+
 - Một Dynamic Proxy có thể dùng một class trung gian, thậm chí chỉ cần một method chung, để tiếp nhận và xử lý lời gọi đến rất nhiều method khác nhau của nhiều class khác nhau.
 
 Ví dụ:
@@ -125,6 +126,7 @@ class ProductService {
     }
 }
 ```
+
 Thông thường thì mỗi class chỉ có thể gọi class tương ứng của nó
 ```
 UserService
