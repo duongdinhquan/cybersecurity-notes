@@ -75,7 +75,7 @@ ObjectInputStream.readObject()
 ```
 
 
-1. HashMap.readObject()
+### 1. HashMap.readObject()
 
 Trong HashMap có xây dựng một custom `readObject()` method . Khi 2 key trong 1 HashMap xung đột (giá trị hashCode() trả về giống nhau) thì chúng sẽ gọi `key1.equals(key2)`
 ```java
@@ -99,7 +99,7 @@ cuối cùng sẽ gọi: `HotSwappableTargetSource(XString).equals(HotSwappableT
 
 Mục dích hướng đến equals vì: thường ở trong mỗi class đều triển khai nó khi so sánh hai đối tượng ---> gọi setter , getter , tương tác với class khác ,.....
 
-2. Hash Collision - HotSwappableTargetSource.hashCode()
+### 2. Hash Collision - HotSwappableTargetSource.hashCode()
 
 Thông thường thì an object’s hashCode() depends on its internal state
 ```java
@@ -119,7 +119,7 @@ Lý do chọn class `HotSwappableTargetSource`:
 - Its hashCode() is cố định
 - Its equals() delegates to target.equals(…).
 
-3. HotSwappableTargetSource.equals() → XString.equals(POJONode)
+### 3. HotSwappableTargetSource.equals() → XString.equals(POJONode)
 
 `HotSwappableTargetSource.equals(Objetc target)`:
  ```java
@@ -157,7 +157,7 @@ HotSwappableTargetSource.equals()
     → POJONode.toString()
 ```
 
-4. POJONode.toString() → Jackson serialize → proxy.getOutputProperties()
+### 4. POJONode.toString() → Jackson serialize → proxy.getOutputProperties()
 
 `POJONode` Không có method `toString()` nên sẽ gọi  `BaseJsonNode.toString()`.
 ```java
