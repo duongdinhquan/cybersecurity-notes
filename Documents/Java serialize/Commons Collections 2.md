@@ -1,5 +1,6 @@
 ## Reference
 https://cloud.tencent.com/developer/article/2277479
+
 https://zhuanlan.zhihu.com/p/479180596
 ## Prerequisite knowledge
 1.PriorityQueue
@@ -31,3 +32,4 @@ public int compare(final I obj1, final I obj2) {
     return this.decorated.compare(value1, value2);
 }
 ```
+

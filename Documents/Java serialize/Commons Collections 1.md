@@ -11,7 +11,7 @@ https://www.cnblogs.com/rodericklog/articles/16340006.html
 ## Các interface và class liên quan 
 **1. Transform**
 
-1.1: Transformer
+### 1.1: Transformer
 - Một interface chỉ có một method `transform(Object input)`
 ```java
 public interface Transformer {
@@ -29,7 +29,7 @@ public interface Transformer {
 
 }
 ```
-1.2: InvokerTransformer
+### 1.2: InvokerTransformer
 - Là một class được elements Transformer interface và Serializable interface. Class này có method `InvokerTransformer.transform()` sử dụng Java Reflection (`Method.invoke`) để gọi động bất kỳ phương thức nào trên một đối tượng tùy ý với các tham số được truyền vào.
 ```java
     public InvokerTransformer(String methodName, Class[] paramTypes, Object[] args) {
@@ -62,7 +62,7 @@ public Object transform(Object input) {
 ```
 ở class này thao túng  `input` thì có thể dấn đến RCE. 
 
-1.3: ConstantTransformer
+### 1.3: ConstantTransformer
 - Là một class được elements Transformer interface và Serializable interface.
 ```java
 public class ConstantTransformer implements Transformer {
@@ -80,7 +80,7 @@ public class ConstantTransformer implements Transformer {
 ```
 Mọi đối tượng được truyền vào method này đề trả về đối tượng được lưu trữ bỏ qua input.
 
-1.4: ChainedTransformer
+### 1.4: ChainedTransformer
 - Là một class được elements Transformer interface và Serializable interface.Nhiệm vụ chính là xâu chuỗi (link) nhiều đối tượng `InvokerTransformer` nhỏ hơn lại với nhau thành một dây chuyền xử lý tuần tự (pipeline).
 ```java
     public ChainedTransformer(Transformer[] transformers) {
@@ -386,3 +386,11 @@ public class CC1_2 {
 ![](image/2026-09-18-14-13-54.png)
 ![](image/2026-09-18-14-14-14.png)
 ![](image/2026-09-18-14-14-27.png)
+
+## Tư duy về chain này:
+- Đầu vào A: `AnnotationInvocationHandler.readObject()` đang cố gắng thao tác với một Map.
+- Đầu sink: `InvokerTransformer.transform()` Sử dụng reflection để gọi method khác. 
+
+- Đi từ sink đi lên (Bottom-Up)
+    - Đích đến: chạy lệnh `Runtime.getRuntime().exec("calc");`
+    - 
