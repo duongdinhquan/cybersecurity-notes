@@ -120,7 +120,7 @@ AnnotationInvocationHandler.readObject()
             ->InvokerTransformer
                 ->Runtime.exec
 ```
-2.1: TransformedMap
+### 2.1: TransformedMap
 - `TransformedMap` is a class that implements Serializable. Its constructor accepts a map, a key, and a value, where both the key and the value are Transformers
 ```java
 // TransformedMap class
@@ -146,7 +146,7 @@ AnnotationInvocationHandler.readObject()
     }
 ```
 
-2.2: AnnotationInvocationHandler
+### 2.2: AnnotationInvocationHandler
 - This class implements the Serializable interface, Nhưng không gọi trực tiếp được you need to load it by reflection.
 ```java
 //AnnotationInvocationHandler
@@ -217,7 +217,7 @@ AnnotationInvocationHandler.readObject()
             ->InvokerTransformer.transform
                 ->Runtime.exec
 ```
-3.1: LazyMap
+### 3.1: LazyMap
 - `LazyMap` and `TransformedMap` are similar, both originating from the Commons-Collections library and extending `AbstractMapDecorator`. 
 - The only difference between `LazyMap`'s vulnerability trigger point and `TransformedMap` is that `TransformedMap` executes `transform` method when writing(thêm / sửa ) elements, while `LazyMap` executes `factory.transform` in its `get` method.
 - Khi `get` method không thể tìm được giá trị , nó sẽ gọi `factory.transform` để obtain value. 
@@ -393,4 +393,16 @@ public class CC1_2 {
 
 - Đi từ sink đi lên (Bottom-Up)
     - Đích đến: chạy lệnh `Runtime.getRuntime().exec("calc");`
-    - 
+    - ở `InvokerTransformer.transform(input)` sử dụng input để reflection để gọi method những mỗi đối tượng `InvokerTransformer` chỉ có thể gọi được một method ---> muốn gọi method nhiều lần để thành 1 chain reflection thì cần xâu chuỗi nhiều `InvokerTransformer` , output của cái trước = input của cái sau. Để làm cái này thì cần sử dụng `ChainedTransformer` để nối nhiều `InvokerTransformer` thành một pipeline. Nhưng vấn đề xảy ra là bước đầu tiên cần  input là` Runtime.class` nên cần sử dụng `ConstantTransformer` để input luôn trả về hằng số
+    - Chain hoàn chỉnh 
+    ```java
+    Transformer[] transformers = {
+    new ConstantTransformer(Runtime.class),
+    new InvokerTransformer("getMethod", ...),   // → Method
+    new InvokerTransformer("invoke", ...),      // → Runtime instance
+    new InvokerTransformer("exec", ...)         // → RCE
+    };
+    Transformer chain = new ChainedTransformer(transformers);
+    ```
+- Bây giờ cần đi từ đâu để đến `ChainedTransformer`:
+    - Chain 1:               
