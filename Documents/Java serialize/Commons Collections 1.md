@@ -245,7 +245,7 @@ AnnotationInvocationHandler.readObject()
 
 
 
-POC CHAIN 1:
+## POC CHAIN 1:
 ```java
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.ChainedTransformer;
@@ -311,7 +311,7 @@ public class CC1 {
 ```
 
 
-POC CHAIN 2:
+## POC CHAIN 2:
 ```java
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.functors.ChainedTransformer;
@@ -404,5 +404,7 @@ public class CC1_2 {
     };
     Transformer chain = new ChainedTransformer(transformers);
     ```
-- Bây giờ cần đi từ đâu để đến `ChainedTransformer`:
-    - Chain 1:               
+- Bây giờ cần đi từ đâu để đến `chain.transform(x)`:
+    - Chain 1:   `AnnotationInvocationHandler` + `TransformedMap`
+        - `TransformedMap` class có đoạn code `valueTransformer.transform(value)` trong đó `valueTransformer` là một tham số trong constructor nếu thao túng nó là `ChainedTransformer` thì `ChainedTransformer.transform(value)` lập tức sẽ được gọi.
+        - Bơm `TransformedMap` vào `AnnotationInvocationHandler` ở lúc khởi tạo `memberValues=TransformedMap`. Tự động kích hoạt `readObject` nên gọi `.setValue()` ----> `checkSetValue()`  ----> `valueTransformer.transform(value)`
