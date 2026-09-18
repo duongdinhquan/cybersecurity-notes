@@ -4,7 +4,11 @@ commons-collections
 JDK7 OR JDK 8
 ```
 
-## Các interface và class liên quan [link](https://www.cnblogs.com/rodericklog/articles/16340006.html)
+## Reference
+https://zhuanlan.zhihu.com/p/479180596
+https://www.cnblogs.com/rodericklog/articles/16340006.html
+
+## Các interface và class liên quan 
 **1. Transform**
 
 1.1: Transformer
@@ -374,3 +378,11 @@ public class CC1_2 {
     }
 }
 ```
+
+
+## Sơ đồ dễ nhìn
+![](image/2026-09-18-14-13-00.png)
+![](image/2026-09-18-14-13-28.png)
+![](image/2026-09-18-14-13-54.png)
+![](image/2026-09-18-14-14-14.png)
+![](image/2026-09-18-14-14-27.png)
