@@ -1,3 +1,7 @@
+Chuỗi serialize ở java sau khi decode base64  sẽ có các byte đặc trưng sau : `ac` `ed` `00` `05`
+
+
+
 ## 1. ClassLoader [chi tiết](https://developer.aliyun.com/article/859819)
 Java không phải là một an executable file, nó là tập hợp nhiều Java classes , nó được kiểm soát bởi JVM. ClassLoader đảm nhận việc đọc các tệp `.class`
 

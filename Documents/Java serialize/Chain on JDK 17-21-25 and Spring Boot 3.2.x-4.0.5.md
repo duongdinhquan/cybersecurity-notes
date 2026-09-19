@@ -85,6 +85,22 @@ for (int i = 0; i < mappings; i++) {
     V value = (V) s.readObject();    // Reconstruct value from the byte stream
     putVal(hash(key), key, value, false, false);  // ← The chain starts here
 }
+
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+               boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        Node<K,V> e; K k;
+        if (p.hash == hash &&
+            ((k = p.key) == key || (key != null && key.equals(k))))   // CHÚ Ý Ở ĐÂY NỮA
+            e = p;
+        ...
+    }
+}
 ```
 Trước khi đặt cặp key-value vào table thì sẽ chạy `hash(key)` trước
 ```java
@@ -147,6 +163,8 @@ public boolean equals(Object obj2)
     // cuối cùng gọi  str().equals(POJONode.toString());
 }
 ```
+
+thực tế sẽ thành: `HotSwappableTargetSource(XString).equals(HotSwappableTargetSource(POJONode))`
 follow hiện tại:
 ```
 <actual call flow>
@@ -159,7 +177,7 @@ HotSwappableTargetSource.equals()
 
 ### 4. POJONode.toString() → Jackson serialize → proxy.getOutputProperties()
 
-`POJONode` Không có method `toString()` nên sẽ gọi  `BaseJsonNode.toString()`.
+`POJONode` Không có method `toString()` nên theo nguyên tắc kế thừa nó sẽ gọi  `BaseJsonNode.toString()`.
 ```java
 // BaseJsonNode.java
 @Override
