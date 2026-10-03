@@ -46,7 +46,8 @@ if (
     - Phải có sự tương tác chủ động của người dùng thật (User Activation).
         - Người dùng phải trực tiếp dùng tay click chuột, chạm màn hình cảm ứng, hoặc bấm phím để kích hoạt hành động đó.
         - Nếu một hành vi chuyển trang do mã JavaScript tự ý gọi (ví dụ: `window.location.href = '...'` hoặc `document.forms[0].submit()` chạy ngầm mà không gắn liền với một sự kiện click của người dùng), trình duyệt sẽ không đính kèm header này (hoặc giá trị Sec-Fetch-User sẽ bị bỏ qua/undefined). Khi có tương tác người dùng hợp lệ, giá trị của nó luôn là ?1.
-    
+
+Check việc framework có chuẩn hóa đường dẫn không trong các `case-insensitive` , `case-sensitive` , `aaa/`  , `axxx` 
 
 ###  2. Beyond XSS [link](https://aszx87410.github.io/beyond-xss/en/)
 Một chú ý trog XSS là `attribute` trong các element của html sẽ được decode tự động nếu nó bị encode.

@@ -104,3 +104,21 @@ Trên Ubuntu/Debian: `/etc/apache2/sites-available/000-default.conf` , file cấ
 ```
 thiết lập và quản lý cách Apache phục vụ một trang web cụ thể trên máy chủ.
 
+## Config Directives in Apache HTTP Server
+**1. Xử lý yêu cầu (Handlers & Types)**
+
+`SetHandler`: ép toàn bộ các file trong thư mục trên os được xử lý bởi handler cụ thể
+
+`AddHandler handler-name extension [extension]`: mapping extension nhất định đến một handler
+
+`AddType media-type extension [extension]`
+```
+AddHandler application/x-httpd-php .php
+→ set r->handler.
+
+AddType application/x-httpd-php .php
+→ set r->content_type, không set r->handler.
+``
+Cả 2 cái trên đều có thể sử dụng thay thế cho nhau 
+
+`RewriteRule regex substitution`: thuộc  module `mod_rewrite` trong Apache. URL do user nhập qua trình duyệt nếu match với regex này thì sẽ được chuyển thành substitution này và substitution vẫn là một URL-path. 
