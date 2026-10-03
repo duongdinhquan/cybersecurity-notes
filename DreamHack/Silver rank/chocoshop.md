@@ -1,6 +1,6 @@
-The website is vulnerable to a race condition - Applying multiple coupons to a single session
+## The website is vulnerable to a race condition - Applying multiple coupons to a single session
 
-1. `/coupon/claim`
+### 1. `/coupon/claim`
 ```python
 @app.route('/coupon/claim')
 @get_session()
@@ -19,7 +19,7 @@ def coupon_claim(user):
 ```
 This is a `TOCTOU` (Time-of-Check to Time-of-Use) vulnerability. There is no locking mechanism or atomic operation between checking `user['coupon_claimed']` and updating it to True.
 
-2. submit coupon
+### 2. submit coupon
 ```python
 RATE_LIMIT_DELTA = 10
 ...
@@ -31,7 +31,7 @@ else:
 ```
 Each user (identified by `UUID`) is only allowed to submit a coupon once every 10 seconds.
 
-3. POC
+## 3. POC
 ```python
 import requests
 import threading
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     main()
 ```
 
-flag: `DH{781b791fa0ef98ff734bf37ec95bf5c27fd95710e6745274f045b376b590fb42}`
+## flag: `DH{781b791fa0ef98ff734bf37ec95bf5c27fd95710e6745274f045b376b590fb42}`
