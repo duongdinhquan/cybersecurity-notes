@@ -142,7 +142,7 @@ node : .getClass() là sẽ truy cập blueprint của đối tượng đó
             - gọi tên method thông qua type của class.
            
 
-# Python 
+## Python 
 
 **1. Phân cấp kiến trúc trong python**
 - Package : thư mục chứa code 
@@ -155,6 +155,16 @@ node : .getClass() là sẽ truy cập blueprint của đối tượng đó
     ![image](https://hackmd.io/_uploads/BJ4TpZekzg.png)
 - một vài magic method được sử dụng
     ![image](https://hackmd.io/_uploads/H15N7GgkMx.png)
+
+| Tên phương thức | Đối tượng sở hữu (Cái nào có method đó) | Đối tượng được trả về khi sử dụng method | Tác dụng của method |
+|---|---|---|---|
+| `__class__` | Mọi đối tượng/kiểu dữ liệu trong Python (chuỗi, số, danh sách, v.v.) | Đối tượng Lớp (class) mà đối tượng đó thuộc về | Xác định kiểu lớp của đối tượng hiện tại để chuyển từ dữ liệu thô sang cấu trúc lớp. |
+| `__init__` | Đối tượng Lớp (class) hoặc các thể hiện (instance) của lớp | Phương thức khởi tạo (constructor) của lớp đó | Dùng làm bước trung gian để truy cập vào không gian tên bên trong constructor (thường kết hợp với `__globals__`). |
+| `__bases__` | Đối tượng Lớp (class) | Tuple chứa danh sách các lớp cha (parent/base classes) trực tiếp | Cho phép đi ngược từ lớp hiện tại lên các lớp cơ sở cấp trên. |
+| `__mro__` | Đối tượng Lớp (class) | Tuple chứa thứ tự ưu tiên tìm kiếm lớp cha và lớp cơ sở (Method Resolution Order) từ lớp hiện tại đến `object` | Cung cấp lộ trình rõ ràng để duyệt ngược lên tận gốc hệ thống phân cấp lớp (`object`). |
+| `__subclasses__` | Đối tượng Lớp (đặc biệt là lớp gốc `object`) | Danh sách (list) tất cả các lớp con đang kế thừa trực tiếp từ lớp hiện tại | Liệt kê các lớp con trong bộ nhớ để tìm kiếm các lớp có khả năng hữu ích cho việc khai thác. |
+| `__globals__` | Đối tượng Hàm (function) hoặc Phương thức (method) viết bằng Python | Từ điển (dictionary) chứa toàn bộ các biến, hàm và thư viện toàn cục trong module định nghĩa hàm đó | Truy xuất vào không gian tên toàn cục để lấy các module hệ thống nhạy cảm (ví dụ: `os`, `subprocess`). |
+
 - một vài chú ý về `__globals__`
     - CHỈ CÓ THỂ truy cập `__globals__` từ một HÀM (Function) hoặc PHƯƠNG THỨC (Method) được viết bằng ngôn ngữ Python thuần túy.
     - Nó không tồn tại trên
@@ -171,6 +181,10 @@ node : .getClass() là sẽ truy cập blueprint của đối tượng đó
     - Các module hệ thống trực tiếp (`os`, `subprocess`)
     - Truy cập vào các model có thể bên trong đó được dev import thư viện os . 
 - Truy cập vào Global thông qua các function **có sẵn** khi khởi động ứng dụng 
+### python's object model
+https://www.cnblogs.com/tekkaman/p/3364019.html
+
+
 
 ## PHP
 -
