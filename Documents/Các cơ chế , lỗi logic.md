@@ -1,3 +1,25 @@
+## Một số chú ý
+Một số thư viện gửi request có thể sẽ tự đọng chuẩn hóa url dẫn đến việc gửi request đến target không như mong muôn.
+
+ví dụ: thư viện `urllib3`
+```python
+  response = requests.get(
+                f"http://localhost:5000/api/users/{username}/auth",
+                timeout=3,
+            )
+# nếu url dạng http://quandz/../../../.../chuan thì url sẽ thành http://chuan
+```
+
+Ở SQL nếu khởi tạo db mà sử dụng `char(n)` thì đây là dạng `fixed-length` nên dữ liệu trong db sẽ được tự động thêm , bớt để đủ độ dài `n`. Ở đây có thể dẫn đến `take account` thông qua đăng kí . Điều kiện kiên quyết là `STRICT mode` bị tắt nhưng default ở `MySQL 5.7+` nó được bật
+
+Ví dụ:
+```
+bảng user có username và password khởi tạo type là char(20) và tồn tại một bản ghi admin
+Đăng kí 1 tài khoản "admin" + 15_space +"vài kí tự"  thì khi so sánh sẽ trả vê false ==> không trùng bản ghi ==> đăng kí thành công.
+Nhưng thực tế ở DB thì sẽ tự động bị cắt và sẽ tồn tại bản ghi `admin` với password đã được chúng ta đăng kí. 
+```
+
+
 ## 1. lỗi tự động ép kiểu (SQL type coercion)
 ### 1.1 MySQL/MariaDB
 Implicit Type Conversion (hay Type Coercion) là cơ chế MySQL/MariaDB tự động chuyển đổi kiểu dữ liệu của các giá trị khi thực hiện một phép toán hoặc phép so sánh giữa các kiểu dữ liệu khác nhau.

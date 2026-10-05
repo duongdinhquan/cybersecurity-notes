@@ -164,6 +164,22 @@ node : .getClass() là sẽ truy cập blueprint của đối tượng đó
 | `__mro__` | Đối tượng Lớp (class) | Tuple chứa thứ tự ưu tiên tìm kiếm lớp cha và lớp cơ sở (Method Resolution Order) từ lớp hiện tại đến `object` | Cung cấp lộ trình rõ ràng để duyệt ngược lên tận gốc hệ thống phân cấp lớp (`object`). |
 | `__subclasses__` | Đối tượng Lớp (đặc biệt là lớp gốc `object`) | Danh sách (list) tất cả các lớp con đang kế thừa trực tiếp từ lớp hiện tại | Liệt kê các lớp con trong bộ nhớ để tìm kiếm các lớp có khả năng hữu ích cho việc khai thác. |
 | `__globals__` | Đối tượng Hàm (function) hoặc Phương thức (method) viết bằng Python | Từ điển (dictionary) chứa toàn bộ các biến, hàm và thư viện toàn cục trong module định nghĩa hàm đó | Truy xuất vào không gian tên toàn cục để lấy các module hệ thống nhạy cảm (ví dụ: `os`, `subprocess`). |
+| `__getitem__` |dict, list, str |Method truy cập index| Khi bị chặn `[]` |
+| `__getattribute__` |mọi object |Method truy cập attribute |Khi bị chặn dấu `.` |
+| `__loader__` |module |Loader object |Import động |
+| `__spec__` |module |Module spec |Import động |
+| `__dict__` |instance, class, module |Dict attribute |Khi không có `__globals__` |
+
+
+
+Trong __globals__ thường có:
+| Key | Có khi nào | Dùng để | 
+| :--- | :---: | ---: |
+| `__builtins__`` |Luôn có | Truy cập `__import__`, `open`, `eval` | 
+| `os` | Nếu module `import os` | environ, popen, system | 
+| `sys` | Hầu hết module | `sys.modules` — đường vòng | 
+| `__name__` |Luôn có | Tên module | 
+ 
 
 - một vài chú ý về `__globals__`
     - CHỈ CÓ THỂ truy cập `__globals__` từ một HÀM (Function) hoặc PHƯƠNG THỨC (Method) được viết bằng ngôn ngữ Python thuần túy.
@@ -172,6 +188,7 @@ node : .getClass() là sẽ truy cập blueprint của đối tượng đó
         - Class (Lớp): `str.__globals__` ➔ Lỗi
         - Hàm built-in (Viết bằng C): `len.__globals__`, `print.__globals__` ➔ Lỗi
     - `hàm_nào_đó.__globals__` :  Trả về một Dictionary chứa TOÀN BỘ các biến, hàm, class và các module đã được import ở cấp độ Global (Toàn cục) thuộc về cái file (module) nơi hàm đó được sinh ra.
+        - `{k: v for k, v in add_note.__globals__.items() if callable(v)}`: để tìm các hàm có thể gọi
     - truy cập vào method mà không cần khởi tạo đối tượng : `__subclasses__()[index].ten_method`
 - Khi truy cập được class mục tiêu nếu muốn khởi tạo đối tượng thì chỉ cần thêm `()` ví dụ `__subclasses__()[index]()`
 - **NOTE** : Nếu không thể tận dụng được các `subclass` thì mục tiêu là tryt cập vào `globals` . Khi truy cập được vào `globals` thì tìm kiếm các mục tiêu sau:
@@ -181,8 +198,23 @@ node : .getClass() là sẽ truy cập blueprint của đối tượng đó
     - Các module hệ thống trực tiếp (`os`, `subprocess`)
     - Truy cập vào các model có thể bên trong đó được dev import thư viện os . 
 - Truy cập vào Global thông qua các function **có sẵn** khi khởi động ứng dụng 
-### python's object model
-https://www.cnblogs.com/tekkaman/p/3364019.html
+
+
+### Jinja2
+`lipsum` :  hàm có sẵn trong Jinja2 dùng để tạo văn bản giả (Lorem Ipsum) 
+
+`self._TemplateReference__context.`: truy cập vào context object của template hiện tại nó chứa  nhiều thứ có thể tận dụng
+
+`cycler` và `joiner` : instance có sẵn trong Jinja2
+
+```
+`{{ lipsum.__globals__.os.environ }}`
+{{ cycler.__init__.__globals__.os.environ }}
+{{ joiner.__init__.__globals__.os.environ }}
+{{ self._TemplateReference__context.__dict__ }}
+{{ self._TemplateReference__context.joiner.__init__.__globals__.os.environ }}
+```
+
 
 
 
