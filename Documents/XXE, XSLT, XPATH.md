@@ -241,6 +241,7 @@ Qúa trình truy cập 1 file trong `PKZIP` thông qua `jar` protocol:
 
 
 
+
 ### Impact
 - đọc file tùy ý 
 - SSRF 
