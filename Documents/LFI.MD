@@ -80,3 +80,18 @@ Content-Type: multipart/form-data; boundary=----X
 Content-Disposition: form-data; name="file1"; filename="shell.php"
 Content-Type: application/x-php
 ```
+
+
+### Jar: protocol
+Một giao thức trong java application , được sử dụng để truy cập  các file trong `PKZIP` (e.g., .zip, .jar, etc.) , nó được sử dụng cho cả local và remote.
+
+Qúa trình truy cập 1 file trong `PKZIP` thông qua `jar` protocol:
+1. An HTTP request is made to download the zip archive from a specified location, such as `https://download.website.com/archive.zip.`
+2. The HTTP response containing the archive is stored temporarily on the system, typically in a location like /tmp/....
+3. The archive is then extracted to access its contents.
+4. The specific file within the archive, file.zip, is read.
+5. After the operation, any temporary files created during this process are deleted.
+
+[This repository](https://github.com/GoSecure/xxe-workshop/tree/master/24_write_xxe/solution) giúp làm cho quá trình ở bước 2 lâu hơn , giúp làm cho file đó được lưu trên server lâu hơn , nó có vẻ hữu ích trong LFI , path traversall, ....
+
+

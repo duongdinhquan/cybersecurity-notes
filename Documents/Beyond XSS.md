@@ -1,4 +1,5 @@
 
+Có thể dùng `confirm()` để thay thế `alert()` cũng có tể search thêm
 ###  2. Beyond XSS [link](https://aszx87410.github.io/beyond-xss/en/)
 Một chú ý trog XSS là `attribute` trong các element của html sẽ được decode tự động nếu nó bị encode.
 

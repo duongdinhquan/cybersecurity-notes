@@ -250,8 +250,41 @@ Qúa trình truy cập 1 file trong `PKZIP` thông qua `jar` protocol:
   - `expect://` : module `expect` của PHP phải được bật nhưng mặc định module này bị tắt.
 
 ![](image/2026-10-08-21-19-01.png)
-## XSLT
-Là một ngôn ngữ lập trình dựa trên XML , dùng để biến đổi các tài liệu XML thành các định dạng khác như HTML, văn bản thuần túy (plain text), JSON (trong phiên bản 3.0), hoặc các cấu trúc XML khác mà không làm thay đổi tài liệu gốc.
+## [XSLT](https://pentesterlab.com/glossary/xslt-injection)
 
+Là một ngôn ngữ lập trình dựa trên XML , dùng để biến đổi các tài liệu XML thành các định dạng khác như HTML, văn bản thuần túy (plain text), JSON (trong phiên bản 3.0), hoặc các cấu trúc XML khác mà không làm thay đổi tài liệu gốc. 
 
+Lỗ hổng xảy ra ứng dụng sử dụng XSLT nhưng mà lại nối chuỗi nên bị dính. 
 
+Kiến  thức về XSLT:
+
+`<xsl:template>`: định nghĩa cấu trúc html
+
+`<xsl:value-of>`: lấy giá trị từ trong các thẻ XML rồi truyền vào phần html định nghĩa trong `<xsl:template>`
+
+`<xsl:for-each>`: lặp qua node-set cụ thể. 
+
+`<xsl:if>`: biểu thức điều kiện
+
+`<xsl:choose>` element is used in conjunction with `<xsl:when>` and `<xsl:otherwise>` to express multiple conditional tests.
+
+`<xsl:apply-templates>`: thường được dùng trong `<xsl:template>` để chọn elements.
+
+`<xsl:variable>`: định nghĩa một biến local or global 
+
+`<xsl:param>`: dùng để nhận tham số đầu vào
+
+`<xsl:include>` và `<xsl:import>`:  load XSLT khác
+`<xsl:output>`: quyết định content-type của output
+
+Xpath function:
+
+`document()` , `doc()`: hỗ trợ protocol như `file://` , `http://` , `jar://` ,....
+
+`unparsed-text()`: đọc file dạng text
+
+`collection()`: load collection
+
+Extension Functions: gọi namespace  của các ngôn ngữ lập trình có thể dẫn đến RCE.
+![](image/2026-10-09-16-17-51.png)
+Một số function khác như xem trước hóa đơn , 
