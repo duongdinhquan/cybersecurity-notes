@@ -1,4 +1,10 @@
 ## kiến thức nền tảng về  Tomcat Web Server
+## referernce
+https://www.cnblogs.com/nalanshawn/p/9351782.html
+
+https://blog.csdn.net/Forward__/article/details/120252706
+
+https://www.cnblogs.com/grasp/p/10061742.html
 ### 1. Các khái niệm cốt lõi
 
 - Compiler (trình biên dịch ) : chuyển đổi toàn bộ mã nguồn sang ngôn ngữ máy một lần duy nhất trước khi chạy, giúp chương trình thực thi nhanh hơn.
