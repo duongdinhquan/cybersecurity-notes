@@ -2,7 +2,7 @@
 Ở change passwd có thể thử một vài case sau:
 - thay trường host thành gmail attacker
 - một mảng gồm email victim và attacker.
-
+- có thể nối chuỗi để tạo câu truy vấn , có thể sẽ liên quan đến trường để ám chỉ giá trị trả về ==> thao túng để nó trả về reset_token. 
 Bypass F2A
     - [video](https://www.youtube.com/watch?v=mV7qOw0iFew). Bypass phía FE , vì FE dựa vào http response để cho phép truy cập vào account . Kẻ tấn công chặn request và thay đổi response về dạng một otp hợp lệ và session được tạo sau khi f2a đã được xác thực.
 

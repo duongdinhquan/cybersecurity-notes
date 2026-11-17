@@ -1,4 +1,5 @@
 
+
 ## Temporary file  && session files
 Chủ yếu là dựa vào race condition
 ![](image/2026-09-24-15-50-39.png)
