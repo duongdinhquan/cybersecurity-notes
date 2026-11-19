@@ -26,7 +26,7 @@ inactive=60m use_temp_path=off;
         
         server_name _;  # _ nghĩa là không match với vHost nào thì chọn cái này. 
 
-        location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {# phù hợp URI
+        location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {# phù hợp URI, ~* là không phân biết hoa thường , còn ~ là phân biệt hoa thường. 
             proxy_cache cache; # bật name space tên cache đã khai báo ở trên
             proxy_cache_valid 200 3m; # status 200 ok lưu cache trong 3 phút
             proxy_cache_use_stale error timeout updating; # dùng cache cũ khi gặp lỗi or timeout
@@ -56,6 +56,9 @@ inactive=60m use_temp_path=off;
 }
 
 ```
+
+**Chú ý:**
+- `location`: nếu có `^~` thì nó sẽ lấy locatio tại nó mà không nhảy kiểm tra ở location khác nữa vì nó sẽ kiểm tra xuống mặc dùng match:))))
 
 Cách hoạt động của một số directive:
 
