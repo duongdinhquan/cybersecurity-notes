@@ -55,3 +55,6 @@ Pathched:
 
 Có thể kết hợp với IDOR để take over account . Ví dụ như người dùng liên kết tài khoản với google mà lại sử dụng một tham số ví dụ như `ownerBid` để xác định tài khoản . [link](https://0xgaurang.medium.com/case-study-oauth-misconfiguration-leads-to-account-takeover-d3621fe8308b)
 
+## Một số mẹo
+
+Trong các lỗi SSRF bộ lọc chặn localhost thì ngoài các kĩ thuật 302 , rebinding , ... thì có thể sử dụng `IPv4-mapped IPv6 Address` vì một số thư viện khi kiểm tra `addr.IsLoopback()` <trong go> thì có thể tra về false nên có thể bypass

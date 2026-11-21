@@ -100,6 +100,50 @@ với 5005 là port được mở
 
 - ở IntelliJ IDEA 2025.1.2 : 
 
+
+
+## 3.1 3. JAVA SPRING BOOT TRÊN VSCODE
+
+**Docker Compose**
+```
+services:
+  lab:
+    build: .
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+```
+**Dockerfile**
+```
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY deploy/ApiTest-0.0.1-SNAPSHOT.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"] # ở đây
+```
+
+**launch.json**
+```
+
+
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Remote Debug - Dreamhack Linux",
+      "request": "attach",
+      "hostName": "192.168.126.128", # ip linux
+      "port": 5005
+    }
+  ]
+}
+
+```
 ## 4. ASP.NET 
 1. Trong file Dockerfile
 - Sửa Dockerfile để cài debugger (vsdbg)

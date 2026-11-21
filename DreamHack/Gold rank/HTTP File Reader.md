@@ -13,7 +13,13 @@ the existing constraints include a blacklist of forbidden of `filename` paramter
 
 ==> parten of SSRF , use `Shell Globbing` to bypass blacklist of forbidden. 
 
-Payload:` /f[l]ag[[:punct:]]txt`
+Payload:
+```
+/f[l]ag[[:punct:]]txt
+/fla[g][,-1]txt
+/fla``g[[:punct:]]txt
+
+```
 
 
 2. in the `/deploy/main.go` , it make a request to specific site but not allow `localhost`. We can bypass the constraint by using `redirect` because `resp, err := http.Get(url)` follows redirect 
