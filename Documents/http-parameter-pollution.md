@@ -6,6 +6,11 @@ https://hacktricks.wiki/en/pentesting-web/parameter-pollution.html
 
 ## Phân cách các tham số
 ![](image/2026-11-09-12-23-49.png)
+Tìm hiểu thêm về` Matrix Parameters`:
+- tham số trong Path, ví dụ: `/cars;color=red;year=2012`
+- các frame như Spring MVC (Java) hỗ trợ bằng annotation `@MatrixVariable` để trích xuất các tham số này một cách dễ dàng
+- JAX-RS / Jersey (Java) cũng tương tự annotation `@MatrixParam` để truy cập chúng.
+- ASP.NET Core (C#):
 
 ## PHP 8.3.11 AND Apache 2.4.62
 
