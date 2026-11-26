@@ -335,3 +335,5 @@ if (
         - Nếu một hành vi chuyển trang do mã JavaScript tự ý gọi (ví dụ: `window.location.href = '...'` hoặc `document.forms[0].submit()` chạy ngầm mà không gắn liền với một sự kiện click của người dùng), trình duyệt sẽ không đính kèm header này (hoặc giá trị Sec-Fetch-User sẽ bị bỏ qua/undefined). Khi có tương tác người dùng hợp lệ, giá trị của nó luôn là ?1.
 
 Check việc framework có chuẩn hóa đường dẫn không trong các `case-insensitive` , `case-sensitive` , `aaa/`  , `axxx` 
+
+
